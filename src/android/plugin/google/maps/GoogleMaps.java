@@ -34,6 +34,7 @@ import android.os.Build.VERSION;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.util.Log;
+import android.view.animation.TranslateAnimation;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -403,7 +404,7 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
     if (args.length() == 2) {
       this.mapDivLayoutJSON = args.getJSONObject(1);
       this.webView.addView(mapView);
-      this.updateMapViewLayout();
+      this.updateMapViewLayout(false);
     }
     
     //Custom info window
@@ -563,7 +564,7 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
         mapFrame.removeView(mapView);
         if (mapDivLayoutJSON != null) {
           webView.addView(mapView);
-          updateMapViewLayout();
+          updateMapViewLayout(false);
         }
         root.removeView(windowLayer);
         webView.setVisibility(View.VISIBLE);
@@ -580,12 +581,12 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
 
   private void resizeMap(JSONArray args, CallbackContext callbackContext) throws JSONException {
     mapDivLayoutJSON = args.getJSONObject(0);
-    updateMapViewLayout();
+    updateMapViewLayout(args.optBoolean(1, false));
     callbackContext.success();
   }
   
   @SuppressWarnings("deprecation")
-  private void updateMapViewLayout() {
+  private void updateMapViewLayout(boolean animated) {
     try {
       int divW = contentToView(mapDivLayoutJSON.getLong("width") );
       int divH = contentToView(mapDivLayoutJSON.getLong("height"));
@@ -595,21 +596,38 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
       ViewGroup.LayoutParams lParams = mapView.getLayoutParams();
       if (lParams instanceof android.widget.AbsoluteLayout.LayoutParams) {
         AbsoluteLayout.LayoutParams params = (AbsoluteLayout.LayoutParams) lParams;
+
+        int deltaX = divLeft - params.x;
+        int deltaY = divTop - params.y;
+
         params.width = divW;
         params.height = divH;
         params.y = divTop;
         params.x = divLeft;
         mapView.setLayoutParams(params);
+
+        TranslateAnimation slide = new TranslateAnimation(-deltaX, -deltaY, 0, 0);
+        slide.setDuration(500);
+        mapView.startAnimation(slide);
+
         return;
       }
 
       if (lParams instanceof android.widget.LinearLayout.LayoutParams) {
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) lParams;
+
+        int deltaX = divLeft - params.leftMargin;
+        int deltaY = divTop - params.topMargin;
+
         params.width = divW;
         params.height = divH;
         params.topMargin = divTop;
         params.leftMargin = divLeft;
         mapView.setLayoutParams(params);
+
+        TranslateAnimation slide = new TranslateAnimation(-deltaX, -deltaY, 0, 0);
+        slide.setDuration(500);
+        mapView.startAnimation(slide);
       }
       
     } catch (JSONException e) {}
