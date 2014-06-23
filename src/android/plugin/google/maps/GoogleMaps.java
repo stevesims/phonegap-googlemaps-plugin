@@ -606,9 +606,11 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
         params.x = divLeft;
         mapView.setLayoutParams(params);
 
-        TranslateAnimation slide = new TranslateAnimation(-deltaX, -deltaY, 0, 0);
-        slide.setDuration(500);
-        mapView.startAnimation(slide);
+        if (animated == true) {
+          TranslateAnimation slide = new TranslateAnimation(-deltaX, 0, -deltaY, 0);
+          slide.setDuration(500);
+          mapView.startAnimation(slide);
+        }
 
         return;
       }
@@ -625,9 +627,11 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
         params.leftMargin = divLeft;
         mapView.setLayoutParams(params);
 
-        TranslateAnimation slide = new TranslateAnimation(-deltaX, -deltaY, 0, 0);
-        slide.setDuration(500);
-        mapView.startAnimation(slide);
+        if (animated == true) {
+          TranslateAnimation slide = new TranslateAnimation(-deltaX, 0, -deltaY, 0);
+          slide.setDuration(500);
+          mapView.startAnimation(slide);
+        }
       }
       
     } catch (JSONException e) {}
