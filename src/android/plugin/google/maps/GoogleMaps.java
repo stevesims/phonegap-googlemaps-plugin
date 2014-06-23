@@ -88,7 +88,8 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
     closeDialog,
     getMyLocation,
     exec,
-    isAvailable
+    isAvailable,
+    getLicenseInfo
   }
   
   private enum EVENTS {
@@ -131,6 +132,9 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
         }
         try {
           switch(METHODS.valueOf(action)) {
+          case getLicenseInfo:
+            GoogleMaps.this.getLicenseInfo(args, callbackContext);
+            break;
           case setVisible:
             GoogleMaps.this.setVisible(args, callbackContext);
             break;
@@ -314,6 +318,9 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
       }
       if (gestures.has("rotate")) {
         options.rotateGesturesEnabled(gestures.getBoolean("rotate"));
+      }
+      if (gestures.has("zoom")) {
+        options.zoomGesturesEnabled(gestures.getBoolean("zoom"));
       }
     }
     
@@ -933,6 +940,9 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
   public View getInfoContents(Marker marker) {
     String title = marker.getTitle();
     String snippet = marker.getSnippet();
+    if ((title == null) && (snippet == null)) {
+      return null;
+    }
 
     if ((title == null) && (snippet == null)) {
       return null;

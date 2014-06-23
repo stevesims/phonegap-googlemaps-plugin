@@ -254,7 +254,7 @@
   App.prototype.getLicenseInfo = function(callback) {
     cordova.exec(function(txt) {
       callback.call(self, null, txt);
-    }, self.errorHandler, PLUGIN_NAME, 'getLicenseInfo');
+    }, self.errorHandler, PLUGIN_NAME, 'getLicenseInfo', []);
   };
   
   /**
@@ -286,13 +286,6 @@
     cordova.exec(null, this.errorHandler, PLUGIN_NAME, 'exec', ['Map.setZoom', zoom]);
   };
  
-  App.prototype.clear = function(callback) {
-    cordova.exec(function(location) {
-      if (typeof callback === "function") {
-        callback();
-      }
-    }, self.errorHandler, PLUGIN_NAME, 'exec', ['Map.clear']);
-  };
   /**
    * @desc Change the map type
    * @param {String} mapTypeId   Specifies the one of the follow strings:
@@ -387,6 +380,14 @@
     var self = this;
     isVisible = parseBoolean(isVisible);
     cordova.exec(null, self.errorHandler, PLUGIN_NAME, 'setVisible', [isVisible]);
+  };
+  /**
+   * Sets the preference for whether all gestures should be enabled or disabled.
+   */
+  App.prototype.setAllGesturesEnabled = function(enabled) {
+    var self = this;
+    enabled = parseBoolean(enabled);
+    cordova.exec(null, self.errorHandler, PLUGIN_NAME, 'exec', ['Map.setAllGesturesEnabled', enabled]);
   };
  
   /**
@@ -813,12 +814,12 @@
     cordova.exec(null, this.errorHandler, PLUGIN_NAME, 'exec', ['Marker.remove', this.getId()]);
     this.off();
   };
-  Marker.prototype.setAlpha = function(alpha) {
-    this.set('alpha');
-    cordova.exec(null, this.errorHandler, PLUGIN_NAME, 'exec', ['Marker.setAlpha', this.getId(), alpha]);
+  Marker.prototype.setOpacity = function(alpha) {
+    this.set('opacity');
+    cordova.exec(null, this.errorHandler, PLUGIN_NAME, 'exec', ['Marker.setOpacity', this.getId(), alpha]);
   };
-  Marker.prototype.getAlpha = function() {
-    return this.get('alpha');
+  Marker.prototype.getOpacity = function() {
+    return this.get('opacity');
   };
   Marker.prototype.setIconAnchor = function(anchorX, anchorY) {
     this.set('anchor', [anchorX, anchorY]);
@@ -1006,7 +1007,7 @@
     this.set('points', points);
     var i,
         path = [];
-    for (i = 0; i < path.length; i++) {
+    for (i = 0; i < points.length; i++) {
       path.push({
         "lat": points[i].lat,
         "lng": points[i].lng
@@ -1092,7 +1093,7 @@
     this.set('points', points);
     var i,
         path = [];
-    for (i = 0; i < path.length; i++) {
+    for (i = 0; i < points.length; i++) {
       path.push({
         "lat": points[i].lat,
         "lng": points[i].lng
@@ -1180,7 +1181,7 @@
     return this.id;
   };
   TileOverlay.prototype.getZIndex = function() {
-    return this.zIndex;
+    return this.get("zIndex");
   };
   TileOverlay.prototype.setZIndex = function(zIndex) {
     zIndex = parseBoolean(zIndex);
