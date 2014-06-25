@@ -70,6 +70,8 @@ import com.google.android.gms.maps.model.CameraPosition.Builder;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 
+import plugin.google.maps.ResizeMoveAnimation;
+
 public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, OnMarkerClickListener,
       OnInfoWindowClickListener, OnMapClickListener, OnMapLongClickListener,
       OnCameraChangeListener, OnMapLoadedCallback, OnMarkerDragListener,
@@ -594,6 +596,7 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
   
   @SuppressWarnings("deprecation")
   private void updateMapViewLayout(boolean animated) {
+    Log.d(TAG, "in updateMapViewLayout");
     try {
       int divW = contentToView(mapDivLayoutJSON.getLong("width") );
       int divH = contentToView(mapDivLayoutJSON.getLong("height"));
@@ -606,39 +609,69 @@ public class GoogleMaps extends CordovaPlugin implements View.OnClickListener, O
 
         int deltaX = divLeft - params.x;
         int deltaY = divTop - params.y;
-
-        params.width = divW;
-        params.height = divH;
-        params.y = divTop;
-        params.x = divLeft;
-        mapView.setLayoutParams(params);
+        int deltaW = divW - params.width;
+        int deltaH = divH - params.height;
 
         if (animated == true) {
-          TranslateAnimation slide = new TranslateAnimation(-deltaX, 0, -deltaY, 0);
-          slide.setDuration(500);
-          mapView.startAnimation(slide);
+          if ((deltaW == 0) && (deltaH == 0)) {
+            Log.d(TAG, "performing translate");
+            params.width = divW;
+            params.height = divH;
+            params.y = divTop;
+            params.x = divLeft;
+            mapView.setLayoutParams(params);
+
+            TranslateAnimation slide = new TranslateAnimation(-deltaX, 0, -deltaY, 0);
+            slide.setDuration(500);
+            mapView.startAnimation(slide);
+          } else {
+            Log.d(TAG, "performing resize");
+            ResizeMoveAnimation slide = new ResizeMoveAnimation(mapView, divLeft, divTop, divW, divH);
+            slide.setDuration(500);
+            mapView.startAnimation(slide);
+          }
+        } else {
+          params.width = divW;
+          params.height = divH;
+          params.y = divTop;
+          params.x = divLeft;
+          mapView.setLayoutParams(params);
         }
-
-        return;
-      }
-
-      if (lParams instanceof android.widget.LinearLayout.LayoutParams) {
+      } else if (lParams instanceof android.widget.LinearLayout.LayoutParams) {
+        Log.d(TAG, "Linear layout detected");
         LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) lParams;
 
         int deltaX = divLeft - params.leftMargin;
         int deltaY = divTop - params.topMargin;
-
-        params.width = divW;
-        params.height = divH;
-        params.topMargin = divTop;
-        params.leftMargin = divLeft;
-        mapView.setLayoutParams(params);
+        int deltaW = divW - params.width;
+        int deltaH = divH - params.height;
 
         if (animated == true) {
-          TranslateAnimation slide = new TranslateAnimation(-deltaX, 0, -deltaY, 0);
-          slide.setDuration(500);
-          mapView.startAnimation(slide);
+          if ((deltaW == 0) && (deltaH == 0)) {
+            params.width = divW;
+            params.height = divH;
+            params.topMargin = divTop;
+            params.leftMargin = divLeft;
+            mapView.setLayoutParams(params);
+
+            TranslateAnimation slide = new TranslateAnimation(-deltaX, 0, -deltaY, 0);
+            slide.setDuration(500);
+            mapView.startAnimation(slide);
+          } else {
+            Log.d(TAG, "performiong LinearLayout resize");
+            ResizeMoveAnimation slide = new ResizeMoveAnimation(mapView, divLeft, divTop, divW, divH);
+            slide.setDuration(500);
+            mapView.startAnimation(slide);
+          }
+        } else {
+          params.width = divW;
+          params.height = divH;
+          params.topMargin = divTop;
+          params.leftMargin = divLeft;
+          mapView.setLayoutParams(params);
         }
+      } else {
+        Log.e(TAG, "Don't understand how to change this layout");
       }
       
     } catch (JSONException e) {}
